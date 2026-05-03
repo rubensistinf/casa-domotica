@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    
+    <!-- METADATOS PRO PARA COMPARTIR -->
+    <title>Casa a Control Domótica</title>
+    <meta property="og:title" content="Control Domótica - Vivienda Inteligente">
+    <meta property="og:description" content="Automatización avanzada desarrollada por los estudiantes del Tecnologico.">
+    <meta property="og:image" content="https://condorirubenla-stack.github.io/casa-domotica/images/enlace.png">
+    <meta property="og:url" content="https://condorirubenla-stack.github.io/casa-domotica/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Link para instalar a pantalla -->
+    <link rel="manifest" href="./instalar/manifest.json">
+
+    <style>
+        :root { 
+            --red-soft: #fca5a5; /* Rojo bajito para la línea del título */
+            --navy: #1d3557;     /* Azul marino para las letras */
+            --status-red: #d90429;
+            --status-green: #2ecc71;
+            --bg-pro: linear-gradient(135deg, #a8dadc 0%, #457b9d 100%);
+        }
+        
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-pro); min-height: 100vh; margin: 0; padding: 15px; color: #333; }
+
+        header { 
+            display: flex; align-items: center; justify-content: center;
+            background: var(--navy); color: white; padding: 25px; 
+            border-radius: 20px; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); 
+        }
+        .logo-inst { height: 60px; margin-right: 20px; }
+        .brand { color: #e63946; font-weight: bold; }
+
+        .container { max-width: 1100px; margin: auto; display: grid; gap: 20px; grid-template-columns: 1fr; }
+        @media (min-width: 768px) { .container { grid-template-columns: 1fr 1fr; } .info-section { grid-column: span 2; } }
+
+        .info-section { 
+            background: rgba(255, 255, 255, 0.95); border-radius: 25px; padding: 35px; text-align: center;
+            border-top: 8px solid var(--navy); box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        .home-img { width: 100%; max-width: 320px; border-radius: 25px; box-shadow: 0 12px 25px rgba(0,0,0,0.2); }
+        .quote { font-style: italic; color: var(--navy); margin: 25px 0; font-size: 1.2rem; }
+        
+        .status-panel { background: #f8f9fa; padding: 20px; border-radius: 15px; border: 1px solid #ddd; }
+        .ip-box { width: 90%; max-width: 300px; padding: 12px; border-radius: 10px; border: 2px solid #ced4da; text-align: center; font-size: 1.1rem; }
+        .btn-connect { background: #e63946; color: white; border: none; padding: 12px 30px; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: 0.3s; }
+        
+        .status-indicator { margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--status-red); box-shadow: 0 0 8px var(--status-red); }
+        .status-label { font-weight: bold; color: var(--status-red); text-transform: uppercase; }
+
+        .connected .dot { background: var(--status-green); box-shadow: 0 0 12px var(--status-green); }
+        .connected .status-label { color: var(--status-green); }
+
+        .card { background: rgba(255, 255, 255, 0.98); padding: 30px; border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 8px solid #e63946; overflow: hidden;}
+        
+        /* Títulos con fondo Rojo Suave, Letra Azul y Centrados */
+        h2 { 
+            font-size: 1.3rem; 
+            margin: -30px -30px 25px -30px; 
+            padding: 15px;
+            background-color: var(--red-soft); 
+            color: var(--navy); 
+            text-align: center; 
+        } 
+
+        .row { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid #edf2f4; }
+        
+        /* Habitaciones en Negrilla */
+        .row span { display: flex; align-items: center; gap: 10px; font-weight: bold; } 
+
+        .switch { position: relative; width: 60px; height: 30px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #dee2e6; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px; background: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background: #e63946; }
+        input:checked + .slider:before { transform: translateX(30px); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="images/logo.png" alt="Logo" class="logo-inst">
+        <h1><span class="brand">Casa a Control</span> Domótica</h1>
+    </header>
+
+    <div class="container">
+        <section class="info-section" id="connArea">
+            <img src="images/casa.png" alt="Arquitectura" class="home-img">
+            <p class="quote">"La tecnología es mejor cuando <strong>une a la gente</strong> y simplifica tu hogar."</p>
+            <div class="status-panel">
+                <input type="text" id="ip" class="ip-box" placeholder="Ej: 192.168.1.15">
+                <br>
+                <button class="btn-connect" onclick="vincular()">VINCULAR SISTEMA</button>
+                <div class="status-indicator">
+                    <span class="dot"></span>
+                    <span class="status-label" id="label">Sin Conexión</span>
+                </div>
+            </div>
+            <p style="font-size: 0.9rem; margin-top: 15px;"><strong>Docente:</strong> Rubén Condori</p>
+        </section>
+
+        <div class="card">
+            <h2>🛌 Área Dormitorios</h2>
+            <div class="row"><span>🛌 Cuarto 1 (P13)</span><label class="switch"><input type="checkbox" onchange="ctrl(0)"><span class="slider"></span></label></div>
+            <div class="row"><span>🛌 Cuarto 2 (P12)</span><label class="switch"><input type="checkbox" onchange="ctrl(1)"><span class="slider"></span></label></div>
+            <div class="row"><span>🛌 Cuarto 3 (P14)</span><label class="switch"><input type="checkbox" onchange="ctrl(2)"><span class="slider"></span></label></div>
+            <div class="row"><span>🛌 Cuarto 4 (P27)</span><label class="switch"><input type="checkbox" onchange="ctrl(3)"><span class="slider"></span></label></div>
+        </div>
+
+        <div class="card">
+            <h2>🛋️ Sala y Confort</h2>
+            <div class="row"><span>💡 Luz Sala A (P26)</span><label class="switch"><input type="checkbox" onchange="ctrl(4)"><span class="slider"></span></label></div>
+            <div class="row"><span>💡 Luz Sala B (P25)</span><label class="switch"><input type="checkbox" onchange="ctrl(5)"><span class="slider"></span></label></div>
+            <div class="row"><span>💡 Luz Sala C (P33)</span><label class="switch"><input type="checkbox" onchange="ctrl(6)"><span class="slider"></span></label></div>
+            <div class="row" style="color:var(--navy)"><span>🌀 Ventilador (P32)</span><label class="switch"><input type="checkbox" onchange="ctrl(7)"><span class="slider"></span></label></div>
+        </div>
+    </div>
+
+    <script>
+        async function vincular() {
+            const ip = document.getElementById('ip').value;
+            const area = document.getElementById('connArea');
+            const txt = document.getElementById('label');
+            if(!ip) { alert("Ingresa la IP del ESP32"); return; }
+            txt.innerText = "Buscando...";
+            try {
+                await fetch(`http://${ip}/toggle?id=ping`, { mode: 'no-cors' });
+                area.classList.add('connected');
+                txt.innerText = "Conectado con Éxito";
+            } catch (e) {
+                area.classList.remove('connected');
+                txt.innerText = "Error de Vínculo";
+            }
+        }
+
+        function ctrl(id) {
+            const ip = document.getElementById('ip').value;
+            if(!ip) { vincular(); return; }
+            fetch(`http://${ip}/toggle?id=${id}`).catch(() => {
+                document.getElementById('connArea').classList.remove('connected');
+                document.getElementById('label').innerText = "Señal Perdida";
+            });
+        }
+    </script>
+    
+    <!-- script para instalar a pantalla -->
+    <script src="./instalar/pwa.js"></script>
+</body>
+</html>
