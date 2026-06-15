@@ -93,7 +93,7 @@
             <img src="images/casa.png" alt="Arquitectura" class="home-img">
             <p class="quote">"La tecnología es mejor cuando <strong>une a la gente</strong> y simplifica tu hogar."</p>
             <div class="status-panel">
-                <input type="text" id="ip" class="ip-box" placeholder="Ej: 192.168.1.15">
+                <input type="text" id="ip" class="ip-box" placeholder="Ej: casa.local (o IP)">
                 <br>
                 <button class="btn-connect" onclick="vincular()">VINCULAR SISTEMA</button>
                 <div class="status-indicator">
@@ -106,44 +106,72 @@
 
         <div class="card">
             <h2>🛌 Área Dormitorios</h2>
-            <div class="row"><span>🛌 Cuarto 1 (P13)</span><label class="switch"><input type="checkbox" onchange="ctrl(0)"><span class="slider"></span></label></div>
-            <div class="row"><span>🛌 Cuarto 2 (P12)</span><label class="switch"><input type="checkbox" onchange="ctrl(1)"><span class="slider"></span></label></div>
-            <div class="row"><span>🛌 Cuarto 3 (P14)</span><label class="switch"><input type="checkbox" onchange="ctrl(2)"><span class="slider"></span></label></div>
-            <div class="row"><span>🛌 Cuarto 4 (P27)</span><label class="switch"><input type="checkbox" onchange="ctrl(3)"><span class="slider"></span></label></div>
+            <div class="row"><span>🛌 Cuarto 1 (P13)</span><label class="switch"><input type="checkbox" id="chk0" onchange="ctrl(0)"><span class="slider"></span></label></div>
+            <div class="row"><span>🛌 Cuarto 2 (P12)</span><label class="switch"><input type="checkbox" id="chk1" onchange="ctrl(1)"><span class="slider"></span></label></div>
+            <div class="row"><span>🛌 Cuarto 3 (P14)</span><label class="switch"><input type="checkbox" id="chk2" onchange="ctrl(2)"><span class="slider"></span></label></div>
+            <div class="row"><span>🛌 Cuarto 4 (P27)</span><label class="switch"><input type="checkbox" id="chk3" onchange="ctrl(3)"><span class="slider"></span></label></div>
         </div>
 
         <div class="card">
             <h2>🛋️ Sala y Confort</h2>
-            <div class="row"><span>💡 Luz Sala A (P26)</span><label class="switch"><input type="checkbox" onchange="ctrl(4)"><span class="slider"></span></label></div>
-            <div class="row"><span>💡 Luz Sala B (P25)</span><label class="switch"><input type="checkbox" onchange="ctrl(5)"><span class="slider"></span></label></div>
-            <div class="row"><span>💡 Luz Sala C (P33)</span><label class="switch"><input type="checkbox" onchange="ctrl(6)"><span class="slider"></span></label></div>
-            <div class="row" style="color:var(--navy)"><span>🌀 Ventilador (P32)</span><label class="switch"><input type="checkbox" onchange="ctrl(7)"><span class="slider"></span></label></div>
+            <div class="row"><span>💡 Luz Sala A (P26)</span><label class="switch"><input type="checkbox" id="chk4" onchange="ctrl(4)"><span class="slider"></span></label></div>
+            <div class="row"><span>💡 Luz Sala B (P25)</span><label class="switch"><input type="checkbox" id="chk5" onchange="ctrl(5)"><span class="slider"></span></label></div>
+            <div class="row"><span>💡 Luz Sala C (P33)</span><label class="switch"><input type="checkbox" id="chk6" onchange="ctrl(6)"><span class="slider"></span></label></div>
+            <div class="row" style="color:var(--navy)"><span>🌀 Ventilador (P32)</span><label class="switch"><input type="checkbox" id="chk7" onchange="ctrl(7)"><span class="slider"></span></label></div>
         </div>
     </div>
 
     <script>
+        let syncInterval;
+
         async function vincular() {
             const ip = document.getElementById('ip').value;
             const area = document.getElementById('connArea');
             const txt = document.getElementById('label');
-            if(!ip) { alert("Ingresa la IP del ESP32"); return; }
+            if(!ip) { alert("Ingresa la IP o casa.local"); return; }
             txt.innerText = "Buscando...";
             try {
                 await fetch(`http://${ip}/toggle?id=ping`, { mode: 'no-cors' });
                 area.classList.add('connected');
                 txt.innerText = "Conectado con Éxito";
+                
+                // Iniciar sincronización de estado
+                if (syncInterval) clearInterval(syncInterval);
+                sincronizarEstado(); // Ejecutar inmediatamente
+                syncInterval = setInterval(sincronizarEstado, 2000); // Luego cada 2 segundos
             } catch (e) {
                 area.classList.remove('connected');
                 txt.innerText = "Error de Vínculo";
+                if (syncInterval) clearInterval(syncInterval);
+            }
+        }
+
+        async function sincronizarEstado() {
+            const ip = document.getElementById('ip').value;
+            if(!ip) return;
+            try {
+                const res = await fetch(`http://${ip}/status`);
+                const estados = await res.json();
+                for (let i = 0; i < 8; i++) {
+                    const chk = document.getElementById(`chk${i}`);
+                    if (chk && estados.length > i) {
+                        chk.checked = estados[i] === 1;
+                    }
+                }
+            } catch (e) {
+                console.log("Error al sincronizar estado", e);
             }
         }
 
         function ctrl(id) {
             const ip = document.getElementById('ip').value;
             if(!ip) { vincular(); return; }
-            fetch(`http://${ip}/toggle?id=${id}`).catch(() => {
+            fetch(`http://${ip}/toggle?id=${id}`).then(() => {
+                setTimeout(sincronizarEstado, 200); // Sincronizar poco después de cambiar
+            }).catch(() => {
                 document.getElementById('connArea').classList.remove('connected');
                 document.getElementById('label').innerText = "Señal Perdida";
+                if (syncInterval) clearInterval(syncInterval);
             });
         }
     </script>
